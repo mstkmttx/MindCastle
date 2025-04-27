@@ -4,8 +4,8 @@
     "description": "Your personal space for thoughts and reflections",
     "start_url": "/index.html",
     "display": "standalone",
-    "background_color": "#0d0f1c",
-    "theme_color": "#0d0f1c",
+    "background_color": "#0a0321",
+    "theme_color": "#0a0321",
     "orientation": "portrait",
     "icons": [
         {

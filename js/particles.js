@@ -8,10 +8,10 @@ class ParticleBackground {
         this.canvas = document.getElementById(elementId);
         this.ctx = this.canvas.getContext('2d');
         this.particles = [];
-        this.particleCount = 150; // Increased number of particles
+        this.particleCount = 180; // Increased number of particles
         this.colors = [
-            'rgba(127, 90, 240, 0.7)',  // Primary accent
-            'rgba(114, 240, 236, 0.7)',  // Secondary accent
+            'rgba(127, 90, 240, 0.7)',  // Primary accent - purple
+            'rgba(114, 240, 236, 0.7)',  // Secondary accent - teal
             'rgba(255, 255, 255, 0.9)'   // White for brighter stars
         ];
         this.maxSize = 3;
@@ -58,7 +58,7 @@ class ParticleBackground {
         this.particles = [];
         
         // Determine particle count based on screen size
-        const adjustedCount = Math.min(this.particleCount, Math.floor(this.width * this.height / 6000));
+        const adjustedCount = Math.min(this.particleCount, Math.floor(this.width * this.height / 5000));
         
         for (let i = 0; i < adjustedCount; i++) {
             // Create particles with different sizes for parallax effect
@@ -148,8 +148,8 @@ class ParticleBackground {
         
         this.lastShootingStarTime = now;
         
-        // Set next interval
-        this.shootingStarInterval = Math.random() * 15000 + 45000; // Random between 45-60 seconds
+        // Set next interval - between 45-60 seconds
+        this.shootingStarInterval = Math.random() * 15000 + 45000;
     }
     
     updateShootingStar() {
@@ -248,87 +248,18 @@ class ParticleBackground {
             // Draw stars in this layer
             this.particles.filter(p => p.layer === layer).forEach(particle => {
                 this.ctx.beginPath();
-                this.ctx.globalAlpha = particle.opacity;
-                
-                // Create gradient for glow effect
-                const gradient = this.ctx.createRadialGradient(
-                    particle.x, particle.y, 0,
-                    particle.x, particle.y, particle.size * 2
-                );
-                
-                gradient.addColorStop(0, particle.color);
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                
-                this.ctx.fillStyle = gradient;
-                
-                // Draw circle
                 this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                this.ctx.fillStyle = particle.color;
+                this.ctx.globalAlpha = particle.opacity;
                 this.ctx.fill();
             });
         });
-        
-        // Draw shooting star if active
-        if (this.shootingStar) {
-            // Draw trail
-            if (this.shootingStar.trail.length > 1) {
-                this.ctx.strokeStyle = this.shootingStar.color;
-                this.ctx.lineWidth = 2;
-                this.ctx.beginPath();
-                
-                // Draw trail with gradient opacity
-                for (let i = 0; i < this.shootingStar.trail.length; i++) {
-                    const point = this.shootingStar.trail[i];
-                    const trailOpacity = (this.shootingStar.trail.length - i) / this.shootingStar.trail.length;
-                    
-                    this.ctx.globalAlpha = this.shootingStar.opacity * trailOpacity * 0.6;
-                    
-                    if (i === 0) {
-                        this.ctx.moveTo(point.x, point.y);
-                    } else {
-                        this.ctx.lineTo(point.x, point.y);
-                    }
-                }
-                
-                this.ctx.stroke();
-            }
-            
-            // Draw sparkles
-            this.shootingStar.sparkles.forEach(sparkle => {
-                const sparkleOpacity = (sparkle.life / sparkle.maxLife) * this.shootingStar.opacity;
-                this.ctx.globalAlpha = sparkleOpacity;
-                this.ctx.fillStyle = sparkle.color;
-                this.ctx.beginPath();
-                this.ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2);
-                this.ctx.fill();
-            });
-            
-            // Draw glowing head
-            this.ctx.globalAlpha = this.shootingStar.opacity;
-            const headGradient = this.ctx.createRadialGradient(
-                this.shootingStar.x, this.shootingStar.y, 0,
-                this.shootingStar.x, this.shootingStar.y, this.shootingStar.headSize * 2
-            );
-            headGradient.addColorStop(0, this.shootingStar.color);
-            headGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            
-            this.ctx.fillStyle = headGradient;
-            this.ctx.beginPath();
-            this.ctx.arc(this.shootingStar.x, this.shootingStar.y, this.shootingStar.headSize, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
         
         // Reset opacity
         this.ctx.globalAlpha = 1;
     }
 
     update() {
-        // Potentially create a shooting star
-        if (!this.shootingStar) {
-            this.createShootingStar();
-        } else {
-            this.updateShootingStar();
-        }
-        
         // Update particle positions and properties (twinkling stars)
         this.particles.forEach(particle => {
             // Move the particle based on its velocity
@@ -364,24 +295,104 @@ class ParticleBackground {
     }
 
     animate() {
+        // Start animation loop
         this.isRunning = true;
         
-        // Animation loop using requestAnimationFrame
         const loop = () => {
+            if (!this.isRunning) return;
+            
+            // Clear canvas
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            
+            // Update and draw particles
             this.update();
             this.draw();
-            this.animationId = requestAnimationFrame(loop);
+            
+            // Check if it's time to create a shooting star
+            if (!this.shootingStar) {
+                this.createShootingStar();
+            }
+            
+            // Update and draw shooting star if exists
+            if (this.shootingStar) {
+                this.updateShootingStar();
+                this.drawShootingStar();
+            }
+            
+            // Continue animation loop
+            requestAnimationFrame(loop);
         };
         
+        // Start the loop
         loop();
+    }
+
+    drawShootingStar() {
+        if (!this.shootingStar) return;
+        
+        const ctx = this.ctx;
+        
+        // Draw the trail
+        if (this.shootingStar.trail.length > 1) {
+            ctx.beginPath();
+            ctx.moveTo(this.shootingStar.trail[0].x, this.shootingStar.trail[0].y);
+            
+            // Create gradient for the trail
+            const gradient = ctx.createLinearGradient(
+                this.shootingStar.trail[0].x, 
+                this.shootingStar.trail[0].y,
+                this.shootingStar.trail[this.shootingStar.trail.length - 1].x,
+                this.shootingStar.trail[this.shootingStar.trail.length - 1].y
+            );
+            
+            gradient.addColorStop(0, this.shootingStar.color);
+            gradient.addColorStop(1, this.shootingStar.color.replace('0.9)', '0)'));
+            
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 2;
+            
+            // Draw the curved trail
+            for (let i = 1; i < this.shootingStar.trail.length; i++) {
+                ctx.lineTo(this.shootingStar.trail[i].x, this.shootingStar.trail[i].y);
+            }
+            
+            ctx.stroke();
+        }
+        
+        // Draw the head (leading point)
+        ctx.beginPath();
+        ctx.arc(this.shootingStar.x, this.shootingStar.y, this.shootingStar.headSize, 0, Math.PI * 2, false);
+        
+        // Create a radial gradient for the glowing head
+        const headGradient = ctx.createRadialGradient(
+            this.shootingStar.x, this.shootingStar.y, 0,
+            this.shootingStar.x, this.shootingStar.y, this.shootingStar.headSize * 2
+        );
+        
+        headGradient.addColorStop(0, this.shootingStar.color);
+        headGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        
+        ctx.fillStyle = headGradient;
+        ctx.fill();
+        
+        // Draw sparkles
+        for (const sparkle of this.shootingStar.sparkles) {
+            const opacity = (sparkle.life / sparkle.maxLife) * 0.7;
+            ctx.globalAlpha = opacity;
+            
+            ctx.beginPath();
+            ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2, false);
+            ctx.fillStyle = sparkle.color;
+            ctx.fill();
+        }
+        
+        // Reset opacity
+        ctx.globalAlpha = 1;
     }
 
     // Stop the animation if needed
     stop() {
         this.isRunning = false;
-        if (this.animationId) {
-            cancelAnimationFrame(this.animationId);
-        }
     }
 }
 
@@ -397,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // For reduced motion preference, set a static background
         const particlesElement = document.getElementById('particles');
         if (particlesElement) {
-            particlesElement.style.background = 'linear-gradient(135deg, #0d0f1c, #1a0b2e)';
+            particlesElement.style.background = 'linear-gradient(135deg, #0a0321, #1a0b2e)';
         }
     }
 }); 

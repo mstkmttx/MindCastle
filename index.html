@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Mind Castle - Your personal space for thoughts and reflections">
-    <meta name="theme-color" content="#0d0f1c">
+    <meta name="theme-color" content="#0a0321">
     <title>Mind Castle</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
@@ -36,20 +36,7 @@
     <main class="app-container">
         <header class="app-header">
             <h1 class="app-title glow-text">Mind Castle</h1>
-            <p class="app-tagline">What's on your mind today?</p>
         </header>
-
-        <section class="main-controls">
-            <button id="recordButton" class="record-button glass-effect" aria-label="Start recording your thought">
-                <div class="mic-icon"></div>
-                <span class="button-text">Start New Thought</span>
-                <div class="pulse-effect"></div>
-            </button>
-            <div id="recordingStatus" class="recording-status hidden">
-                <p>Listening to your thoughts...</p>
-                <button id="stopRecordingButton" class="stop-button glass-effect" aria-label="Stop recording">Stop</button>
-            </div>
-        </section>
 
         <section class="stats-section">
             <div class="stat-card glass-effect">
@@ -63,6 +50,17 @@
             <div class="stat-card glass-effect">
                 <span class="stat-number" id="dailyStreak">0</span>
                 <span class="stat-label">Day Streak</span>
+            </div>
+        </section>
+
+        <section class="main-controls">
+            <button id="recordButton" class="record-button" aria-label="Start recording your thought">
+                <div class="mic-icon"></div>
+                <span class="button-text">Start New Thought</span>
+            </button>
+            <div id="recordingStatus" class="recording-status hidden">
+                <p>Listening to your thoughts...</p>
+                <button id="stopRecordingButton" class="stop-button glass-effect" aria-label="Stop recording">Stop</button>
             </div>
         </section>
 
@@ -108,7 +106,6 @@
                     <div class="room-icon add-room-icon">+</div>
                     <h3>Create Room</h3>
                     <p>Add your own custom room</p>
-                    <span class="add-icon">+</span>
                     <div class="glow-effect"></div>
                 </div>
             </div>
@@ -147,12 +144,12 @@
             <div class="modal-body">
                 <p id="thoughtContent">Thought content will go here...</p>
                 
-                <!-- Premium Feature Button for Business Ideas -->
-                <div id="premiumFeatureContainer" class="premium-feature-container hidden">
-                    <button id="premiumFeatureButton" class="glow-button">
-                        <i class="fas fa-lightbulb"></i> AI Business Analysis
+                <!-- AI Call-to-Action Container -->
+                <div id="aiActionContainer" class="premium-feature-container">
+                    <button id="aiActionButton" class="glow-button" data-usage-count="0" data-feature="ai-action">
+                        <i class="fas fa-magic"></i> <span id="aiActionText">Generate Insight</span>
                     </button>
-                    <p class="premium-feature-description">Get AI-powered analysis and suggestions for your business idea</p>
+                    <p class="premium-feature-description" id="aiUsageCounter">You have 3 AI actions remaining today</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -194,8 +191,8 @@
 
     <footer class="app-footer">
         <nav class="footer-nav">
-            <a href="privacy.html" class="footer-link">Privacy Policy</a>
-            <a href="terms.html" class="footer-link">Terms of Service</a>
+            <a href="privacy.html" class="footer-link">Privacy</a>
+            <a href="terms.html" class="footer-link">Terms</a>
             <button id="installApp" class="install-button hidden">Add to Home Screen</button>
         </nav>
     </footer>
@@ -204,7 +201,7 @@
         <p>You are currently offline. Some features may be unavailable.</p>
     </div>
 
-    <button id="remindMeButton" class="remind-me-button glass-effect" aria-label="Show a random memory">
+    <button id="remindMeButton" class="remind-me-button" aria-label="Show a random memory">
         <div class="star-icon">⭐</div>
         <span>Remind Me</span>
     </button>
@@ -212,7 +209,7 @@
     <div class="random-memory-modal hidden" id="randomMemoryModal">
         <div class="modal-content glass-effect">
             <button class="close-modal" id="closeRandomMemory" aria-label="Close modal">×</button>
-            <h2 class="modal-title">Memory Reminder</h2>
+            <h2 class="modal-title">Memory Echo</h2>
             <div class="memory-card glass-effect">
                 <h3 id="randomMemoryTitle">Memory Title</h3>
                 <p id="randomMemoryContent">Memory content will appear here...</p>
@@ -252,14 +249,21 @@
         </div>
     </div>
 
-    <!-- Premium Feature Modal -->
+    <!-- Premium Upgrade Modal -->
     <div id="premium-modal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Premium Feature</h2>
-        <p>This feature is available to premium users only. Upgrade your account to access this feature.</p>
-        <button id="upgrade-btn">Upgrade</button>
-      </div>
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Upgrade to Mind Castle Premium</h2>
+            <p>Daily AI usage limit reached. Unlock Mind Castle Premium for unlimited AI actions and enhanced memory echoes.</p>
+            <ul class="premium-features-list">
+                <li><i class="fas fa-infinity"></i> Unlimited AI Call-to-Actions</li>
+                <li><i class="fas fa-star"></i> 2 Memory Echo reminders daily</li>
+                <li><i class="fas fa-cloud-upload-alt"></i> Cloud backup (coming soon)</li>
+                <li><i class="fas fa-palette"></i> Custom themes (coming soon)</li>
+            </ul>
+            <p class="premium-price">€4.99 / month</p>
+            <button id="upgrade-btn">Upgrade Now</button>
+        </div>
     </div>
 
     <!-- Business Analysis Modal -->
@@ -282,28 +286,6 @@
                 <button id="download-analysis-btn" class="btn btn-primary">Download Report</button>
                 <button id="share-analysis-btn" class="btn btn-secondary">Share Insights</button>
                 <button class="btn btn-tertiary close-analysis">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Business Analysis Modal -->
-    <div class="analysis-modal">
-        <div class="analysis-modal-content">
-            <div class="analysis-modal-header">
-                <h2>Business Analysis Dashboard</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>Analyzing business data...</p>
-            </div>
-            <div class="analysis-modal-body">
-                <!-- Dynamic content will be inserted here -->
-            </div>
-            <div class="analysis-modal-footer">
-                <button id="download-report" class="btn btn-primary">Download Report</button>
-                <button id="share-insights" class="btn btn-secondary">Share Insights</button>
-                <button class="btn btn-tertiary close-btn">Close</button>
             </div>
         </div>
     </div>
