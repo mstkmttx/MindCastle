@@ -8,17 +8,17 @@ class ParticleBackground {
         this.canvas = document.getElementById(elementId);
         this.ctx = this.canvas.getContext('2d');
         this.particles = [];
-        this.particleCount = 180; // Increased number of particles
+        this.particleCount = 200; // Increased number of particles
         this.colors = [
             'rgba(127, 90, 240, 0.7)',  // Primary accent - purple
             'rgba(114, 240, 236, 0.7)',  // Secondary accent - teal
             'rgba(255, 255, 255, 0.9)'   // White for brighter stars
         ];
-        this.maxSize = 3;
-        this.maxSpeed = 0.1;
+        this.maxSize = 3.5; // Slightly larger max size
+        this.maxSpeed = 0.15; // Slightly faster movement
         this.isRunning = false;
         this.lastShootingStarTime = 0;
-        this.shootingStarInterval = Math.random() * 15000 + 45000; // Random interval between 45-60 seconds
+        this.shootingStarInterval = Math.random() * 15000 + 30000; // More frequent shooting stars (30-45s)
         this.shootingStar = null;
 
         // Initialize the canvas and setup
@@ -58,14 +58,14 @@ class ParticleBackground {
         this.particles = [];
         
         // Determine particle count based on screen size
-        const adjustedCount = Math.min(this.particleCount, Math.floor(this.width * this.height / 5000));
+        const adjustedCount = Math.min(this.particleCount, Math.floor(this.width * this.height / 4500));
         
         for (let i = 0; i < adjustedCount; i++) {
             // Create particles with different sizes for parallax effect
             const layer = Math.random() > 0.8 ? 'front' : (Math.random() > 0.5 ? 'middle' : 'back');
             const sizeMultiplier = layer === 'front' ? 1 : (layer === 'middle' ? 0.7 : 0.5);
             const speedMultiplier = layer === 'front' ? 1 : (layer === 'middle' ? 0.7 : 0.3);
-            const size = (Math.random() * this.maxSize + 0.5) * sizeMultiplier;
+            const size = (Math.random() * this.maxSize + 0.8) * sizeMultiplier;
             
             // Random positions
             const x = Math.random() * this.width;
@@ -79,17 +79,17 @@ class ParticleBackground {
             let color;
             if (layer === 'back') {
                 // Higher chance of white for back layer stars
-                color = Math.random() > 0.6 ? this.colors[2] : this.colors[Math.floor(Math.random() * 2)];
+                color = Math.random() > 0.5 ? this.colors[2] : this.colors[Math.floor(Math.random() * 2)];
             } else if (layer === 'middle') {
-                color = Math.random() > 0.7 ? this.colors[2] : this.colors[Math.floor(Math.random() * 2)];
+                color = Math.random() > 0.6 ? this.colors[2] : this.colors[Math.floor(Math.random() * 2)];
             } else {
                 // Front layer stars are more colorful
                 color = this.colors[Math.floor(Math.random() * this.colors.length)];
             }
             
             // Random opacity for depth effect
-            const opacity = layer === 'front' ? (Math.random() * 0.5 + 0.5) : 
-                          (layer === 'middle' ? (Math.random() * 0.4 + 0.3) : (Math.random() * 0.3 + 0.2));
+            const opacity = layer === 'front' ? (Math.random() * 0.4 + 0.6) : 
+                          (layer === 'middle' ? (Math.random() * 0.3 + 0.4) : (Math.random() * 0.2 + 0.3));
             
             // Twinkling speed based on layer - front twinkles more
             const twinkleSpeed = layer === 'front' ? (Math.random() * 0.03 + 0.02) : 
@@ -248,9 +248,21 @@ class ParticleBackground {
             // Draw stars in this layer
             this.particles.filter(p => p.layer === layer).forEach(particle => {
                 this.ctx.beginPath();
-                this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                this.ctx.fillStyle = particle.color;
+                
+                // Create gradient for glow effect
+                const gradient = this.ctx.createRadialGradient(
+                    particle.x, particle.y, 0,
+                    particle.x, particle.y, particle.size * 2
+                );
+                
+                gradient.addColorStop(0, particle.color);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                this.ctx.fillStyle = gradient;
                 this.ctx.globalAlpha = particle.opacity;
+                
+                // Draw circle
+                this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
                 this.ctx.fill();
             });
         });

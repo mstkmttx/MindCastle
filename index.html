@@ -37,22 +37,8 @@
     <main class="app-container">
         <header class="app-header">
             <h1 class="app-title glow-text">Mind Castle</h1>
+            <h2 class="app-tagline">What's on your mind today?</h2>
         </header>
-
-        <section class="stats-section">
-            <div class="stat-card glass-effect">
-                <span class="stat-number" id="totalThoughts">0</span>
-                <span class="stat-label">Total Thoughts</span>
-            </div>
-            <div class="stat-card glass-effect">
-                <span class="stat-value" id="frequentRoom">None</span>
-                <span class="stat-label">Most Frequent Room</span>
-            </div>
-            <div class="stat-card glass-effect">
-                <span class="stat-number" id="dailyStreak">0</span>
-                <span class="stat-label">Day Streak</span>
-            </div>
-        </section>
 
         <section class="main-controls">
             <button id="recordButton" class="record-button" aria-label="Start recording your thought">
@@ -62,6 +48,24 @@
             <div id="recordingStatus" class="recording-status hidden">
                 <p>Listening to your thoughts...</p>
                 <button id="stopRecordingButton" class="stop-button glass-effect" aria-label="Stop recording">Stop</button>
+            </div>
+        </section>
+
+        <section class="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <span class="stat-number" id="totalThoughts">0</span>
+                <span class="stat-label">Total Thoughts</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏰</div>
+                <span class="stat-value" id="frequentRoom">None</span>
+                <span class="stat-label">Rooms</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <span class="stat-number" id="dailyStreak">0</span>
+                <span class="stat-label">Day Streak</span>
             </div>
         </section>
 

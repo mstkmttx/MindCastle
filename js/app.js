@@ -207,6 +207,19 @@ class MindCastleApp {
             });
         });
         
+        // Stats clicks
+        document.getElementById('totalThoughts').parentNode.addEventListener('click', () => {
+            this.openAllThoughts();
+        });
+        
+        document.getElementById('frequentRoom').parentNode.addEventListener('click', () => {
+            this.toggleRoomsView();
+        });
+        
+        document.getElementById('dailyStreak').parentNode.addEventListener('click', () => {
+            this.showStreakModal();
+        });
+        
         // Add new room card click
         this.addRoomCard.addEventListener('click', () => this.showCreateRoomModal());
         
@@ -320,40 +333,73 @@ class MindCastleApp {
     }
     
     startRecording() {
-        if (!this.recognition) return;
+        // Check if browser supports speech recognition
+        if (!this.recognition) {
+            alert('Speech recognition is not supported in your browser. Please try Chrome or Edge.');
+            return;
+        }
         
-        // Reset transcript
-        this.transcript = '';
-        this.isRecording = true;
+        // Add recording class to the button for animations
+        this.recordButton.classList.add('recording');
+        
+        // Show pulsing effect
+        const pulseEffect = document.createElement('div');
+        pulseEffect.classList.add('pulse-effect');
+        this.recordButton.appendChild(pulseEffect);
+        
+        // Hide the button text during recording
+        const buttonText = this.recordButton.querySelector('.button-text');
+        if (buttonText) buttonText.style.opacity = '0';
+        
+        // Create audio context for visualization if supported
+        if (window.AudioContext || window.webkitAudioContext) {
+            this.setupAudioVisualization();
+        }
         
         // Show recording status
         this.recordingStatus.classList.remove('hidden');
         
-        // Start recognition
-        try {
-            this.recognition.start();
-        } catch (error) {
-            console.error('Error starting speech recognition:', error);
-            this.isRecording = false;
-            this.recordingStatus.classList.add('hidden');
-        }
+        // Start speech recognition
+        this.recognition.start();
+        this.isRecording = true;
+        
+        // Animate recording waves
+        this.animateRecordingWaves();
     }
     
     stopRecording() {
-        if (!this.recognition || !this.isRecording) return;
+        if (!this.isRecording) return;
         
-        // Stop recognition
+        // Stop speech recognition
+        this.recognition.stop();
         this.isRecording = false;
-        try {
-            this.recognition.stop();
-        } catch (error) {
-            console.error('Error stopping speech recognition:', error);
-        }
+        
+        // Remove recording class and effects
+        this.recordButton.classList.remove('recording');
+        const pulseEffect = this.recordButton.querySelector('.pulse-effect');
+        if (pulseEffect) pulseEffect.remove();
+        
+        // Show the button text again
+        const buttonText = this.recordButton.querySelector('.button-text');
+        if (buttonText) buttonText.style.opacity = '1';
         
         // Hide recording status
         this.recordingStatus.classList.add('hidden');
         
-        // Show recording modal with transcript
+        // Reset mic icon scale
+        const micIcon = this.recordButton.querySelector('.mic-icon');
+        if (micIcon) {
+            micIcon.style.transform = '';
+        }
+        
+        // Stop audio visualization if active
+        if (this.visualizationStream) {
+            this.visualizationStream.getTracks().forEach(track => track.stop());
+            this.visualizationStream = null;
+            this.audioAnalyzer = null;
+        }
+        
+        // Show the recording modal with the transcribed text
         this.showRecordingModal();
     }
     
@@ -2154,6 +2200,177 @@ class MindCastleApp {
 
     // Add methods to Storage class for premium features
     // ... existing code ...
+
+    // Add this new method for audio visualization
+    setupAudioVisualization() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioContext = new AudioContext();
+            
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                .then(stream => {
+                    const source = audioContext.createMediaStreamSource(stream);
+                    const analyzer = audioContext.createAnalyser();
+                    analyzer.fftSize = 256;
+                    source.connect(analyzer);
+                    
+                    this.visualizationStream = stream;
+                    this.audioAnalyzer = analyzer;
+                })
+                .catch(err => {
+                    console.log('Error accessing microphone:', err);
+                });
+        } catch (err) {
+            console.log('Audio visualization not supported:', err);
+        }
+    }
+
+    // Add this method to animate recording waves
+    animateRecordingWaves() {
+        if (!this.isRecording || !this.audioAnalyzer) return;
+        
+        const bufferLength = this.audioAnalyzer.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        
+        this.audioAnalyzer.getByteFrequencyData(dataArray);
+        
+        // Calculate average volume
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+        }
+        const average = sum / bufferLength;
+        
+        // Scale mic icon based on volume
+        const scale = 1 + (average / 256) * 0.5; // Max scale of 1.5x
+        const micIcon = this.recordButton.querySelector('.mic-icon');
+        if (micIcon) {
+            micIcon.style.transform = `scale(${scale})`;
+        }
+        
+        // Continue animation if still recording
+        if (this.isRecording) {
+            requestAnimationFrame(() => this.animateRecordingWaves());
+        }
+    }
+
+    // Add these new methods
+
+    // Open all thoughts
+    openAllThoughts() {
+        this.openRoom('all');
+    }
+
+    // Toggle rooms view
+    toggleRoomsView() {
+        const roomsSection = document.querySelector('.castle-rooms');
+        const homeScreen = document.querySelector('.app-container > :not(.castle-rooms)');
+        
+        // Transition to Rooms view
+        this.applyTransition(roomsSection, homeScreen);
+    }
+
+    // Show streak modal
+    showStreakModal() {
+        // Create modal if it doesn't exist
+        let streakModal = document.getElementById('streak-modal');
+        if (!streakModal) {
+            streakModal = document.createElement('div');
+            streakModal.id = 'streak-modal';
+            streakModal.classList.add('modal');
+            
+            const modalContent = document.createElement('div');
+            modalContent.classList.add('modal-content', 'glass-effect');
+            
+            const closeButton = document.createElement('span');
+            closeButton.classList.add('close');
+            closeButton.innerHTML = '&times;';
+            closeButton.addEventListener('click', () => {
+                streakModal.classList.add('hidden');
+            });
+            
+            const title = document.createElement('h2');
+            title.textContent = 'Your Thought Streak';
+            
+            const streakCount = document.createElement('div');
+            streakCount.classList.add('streak-count');
+            streakCount.innerHTML = `<span>${this.getStreakCount()}</span> Days`;
+            
+            const message = document.createElement('p');
+            message.textContent = this.getStreakMessage();
+            
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(title);
+            modalContent.appendChild(streakCount);
+            modalContent.appendChild(message);
+            streakModal.appendChild(modalContent);
+            
+            document.body.appendChild(streakModal);
+        } else {
+            // Update streak info if modal exists
+            streakModal.querySelector('.streak-count span').textContent = this.getStreakCount();
+            streakModal.querySelector('p').textContent = this.getStreakMessage();
+        }
+        
+        // Show modal with animation
+        streakModal.classList.remove('hidden');
+        void streakModal.offsetWidth; // Force reflow
+        streakModal.style.animation = 'modalFadeIn 0.3s forwards';
+    }
+
+    // Get current streak count
+    getStreakCount() {
+        return document.getElementById('dailyStreak').textContent;
+    }
+
+    // Generate motivational streak message
+    getStreakMessage() {
+        const streak = parseInt(this.getStreakCount());
+        
+        if (streak === 0) {
+            return "Start your streak today by recording your first thought!";
+        } else if (streak === 1) {
+            return "Great start! Your journey of a thousand miles begins with this single step.";
+        } else if (streak < 5) {
+            return "You're building momentum! Keep going, consistency is key.";
+        } else if (streak < 10) {
+            return "Impressive dedication! Your mind castle is growing stronger each day.";
+        } else if (streak < 30) {
+            return "Remarkable consistency! You're developing a powerful reflection habit.";
+        } else {
+            return "Extraordinary commitment! Your dedication to mindfulness is truly inspiring.";
+        }
+    }
+
+    // Apply transition effect between views
+    applyTransition(showElement, hideElement) {
+        // Add transition classes
+        hideElement.classList.add('page-transition-exit');
+        
+        // After a brief delay, continue the transition
+        setTimeout(() => {
+            hideElement.classList.add('page-transition-exit-active');
+            
+            // After transition completes
+            setTimeout(() => {
+                hideElement.classList.add('hidden');
+                hideElement.classList.remove('page-transition-exit', 'page-transition-exit-active');
+                
+                showElement.classList.remove('hidden');
+                showElement.classList.add('page-transition-enter');
+                
+                // Force reflow
+                void showElement.offsetWidth;
+                
+                showElement.classList.add('page-transition-enter-active');
+                
+                // Clean up classes after animation completes
+                setTimeout(() => {
+                    showElement.classList.remove('page-transition-enter', 'page-transition-enter-active');
+                }, 300);
+            }, 300);
+        }, 50);
+    }
 }
 
 class MindCastleStorage {
