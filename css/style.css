@@ -185,14 +185,20 @@ button, input, select {
 }
 
 .splash-message {
-    color: var(--text-secondary);
-    margin-top: 1rem;
-    font-size: 1.2rem;
-    font-weight: 300;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    animation: gentle-pulse 3s infinite alternate;
+    letter-spacing: 0.5px;
+}
+
+@keyframes gentle-pulse {
+    0% { opacity: 0.7; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.03); }
 }
 
 .loading-animation {
-    margin-top: 2rem;
     display: flex;
     justify-content: center;
     gap: 0.5rem;
