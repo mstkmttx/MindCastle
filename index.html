@@ -3,310 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mind Castle - Your personal space for thoughts and reflections">
-    <meta name="theme-color" content="#0a0321">
-    <title>Mind Castle</title>
-    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a1128">
+    <title>Mind Castle - Your Personal Thought Sanctuary</title>
+    <meta name="description" content="A secure and beautiful space to capture, organize and revisit your thoughts.">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" href="icons/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="icons/apple-icon-180.png">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/analysis.css">
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div class="particle-background" id="particles"></div>
+    <!-- Background Effects -->
     <div class="nebula-background">
         <div class="nebula-mist nebula-mist-1"></div>
         <div class="nebula-mist nebula-mist-2"></div>
         <div class="nebula-mist nebula-mist-3"></div>
     </div>
     
-    <div class="splash-screen" id="splashScreen">
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen fade-in">
+        <div class="nebula-mist nebula-mist-1"></div>
+        <div class="nebula-mist nebula-mist-2"></div>
+        <div class="nebula-mist nebula-mist-3"></div>
         <div class="splash-content">
-            <h1 class="app-title glow-text">Mind Castle</h1>
-            <p class="splash-message">Welcome to your sanctuary of thoughts...</p>
+            <img src="icons/mind-castle-logo.png" alt="Mind Castle Logo" class="splash-logo">
+            <h1 class="splash-title">Mind Castle</h1>
+            <p class="splash-message">Your personal sanctuary for thoughts and reflections</p>
             <div class="loading-animation">
-                <span></span><span></span><span></span>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
             </div>
         </div>
     </div>
 
-    <main class="app-container">
-        <header class="app-header">
-            <h1 class="app-title glow-text">Mind Castle</h1>
-            <h2 class="app-tagline">What's on your mind today?</h2>
-        </header>
+    <!-- Main App Container -->
+    <div class="app-container hidden">
+        <main>
+            <!-- App Header -->
+            <header class="app-header">
+                <h1 class="app-title">Mind Castle</h1>
+                <h2 class="app-subtitle">Capture your thoughts and organize them in your personal sanctuary</h2>
+            </header>
 
-        <section class="main-controls">
-            <button id="recordButton" class="record-button" aria-label="Start recording your thought">
-                <div class="mic-icon"></div>
-                <span class="button-text">Start New Thought</span>
-            </button>
-            <div id="recordingStatus" class="recording-status hidden">
-                <p>Listening to your thoughts...</p>
-                <button id="stopRecordingButton" class="stop-button glass-effect" aria-label="Stop recording">Stop</button>
-            </div>
-        </section>
-
-        <section class="stats-section">
-            <div class="stat-card">
-                <div class="stat-icon">📝</div>
-                <span class="stat-number" id="totalThoughts">0</span>
-                <span class="stat-label">Total Thoughts</span>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🏰</div>
-                <span class="stat-value" id="frequentRoom">None</span>
-                <span class="stat-label">Rooms</span>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🔥</div>
-                <span class="stat-number" id="dailyStreak">0</span>
-                <span class="stat-label">Day Streak</span>
-            </div>
-        </section>
-
-        <section class="castle-rooms">
-            <h2 class="section-title">Your Mind Galaxy</h2>
-            <div class="room-orbit">
-                <div class="room-card glass-effect" data-room="personal-growth">
-                    <div class="room-icon personal-growth-icon">🌱</div>
-                    <h3>Personal Growth</h3>
-                    <p>Reflections & self-improvement</p>
-                    <span class="card-count" id="personalGrowthCount">0</span>
-                    <div class="glow-effect"></div>
-                </div>
-                <div class="room-card glass-effect" data-room="business-ideas">
-                    <div class="room-icon business-ideas-icon">💡</div>
-                    <h3>Business Ideas</h3>
-                    <p>Ventures & opportunities</p>
-                    <span class="card-count" id="businessIdeasCount">0</span>
-                    <div class="glow-effect"></div>
-                </div>
-                <div class="room-card glass-effect" data-room="dreams-visions">
-                    <div class="room-icon dreams-visions-icon">🌙</div>
-                    <h3>Dreams & Visions</h3>
-                    <p>Aspirations & future goals</p>
-                    <span class="card-count" id="dreamsVisionsCount">0</span>
-                    <div class="glow-effect"></div>
-                </div>
-                <div class="room-card glass-effect" data-room="relationships">
-                    <div class="room-icon relationships-icon">❤️</div>
-                    <h3>Relationships</h3>
-                    <p>People & connections</p>
-                    <span class="card-count" id="relationshipsCount">0</span>
-                    <div class="glow-effect"></div>
-                </div>
-                <div class="room-card glass-effect" data-room="creativity">
-                    <div class="room-icon creativity-icon">🎨</div>
-                    <h3>Creativity</h3>
-                    <p>Random flashes & inspirations</p>
-                    <span class="card-count" id="creativityCount">0</span>
-                    <div class="glow-effect"></div>
-                </div>
-                <div class="room-card glass-effect add-room-card" id="addRoomCard">
-                    <div class="room-icon add-room-icon">+</div>
-                    <h3>Create Room</h3>
-                    <p>Add your own custom room</p>
-                    <div class="glow-effect"></div>
-                </div>
-            </div>
-        </section>
-
-        <section class="search-section">
-            <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" placeholder="Search your thoughts...">
-                <button id="searchButton" class="search-button" aria-label="Search thoughts">
-                    <span class="search-icon"></span>
+            <!-- Main Controls -->
+            <div class="main-controls">
+                <button class="record-button" id="recordButton">
+                    <i class="fas fa-microphone"></i>
                 </button>
             </div>
-        </section>
 
-        <section class="thoughts-container hidden" id="thoughtsView">
-            <div class="thoughts-header">
-                <button class="back-button" id="backToRooms" aria-label="Go back to rooms">Back</button>
-                <h2 class="current-room-title" id="currentRoomTitle">Room</h2>
-            </div>
-            <div class="thoughts-list" id="thoughtsList">
-                <!-- Thought cards will be dynamically inserted here -->
-            </div>
-        </section>
-    </main>
-
-    <div class="thought-modal hidden" id="thoughtModal">
-        <div class="modal-content glass-effect">
-            <div class="modal-header">
-                <h3 id="thoughtTitle">Thought Title</h3>
-                <span class="close-button">&times;</span>
-            </div>
-            <div class="modal-meta">
-                <span id="thoughtRoom" class="room-tag">Room</span>
-                <span id="thoughtDate">Date</span>
-            </div>
-            <div class="modal-body">
-                <p id="thoughtContent">Thought content will go here...</p>
+            <!-- Stats Section -->
+            <div class="stats-section">
+                <div class="stat-item" id="totalThoughts">
+                    <div class="stat-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Total Thoughts</div>
+                </div>
                 
-                <!-- AI Call-to-Action Container -->
-                <div id="aiActionContainer" class="premium-feature-container">
-                    <button id="aiActionButton" class="glow-button" data-usage-count="0" data-feature="ai-action">
-                        <i class="fas fa-magic"></i> <span id="aiActionText">Generate Insight</span>
-                    </button>
-                    <p class="premium-feature-description" id="aiUsageCounter">You have 3 AI actions remaining today</p>
+                <div class="stat-item" id="frequentRoom">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-value">-</div>
+                    <div class="stat-label">Frequent Room</div>
+                </div>
+                
+                <div class="stat-item" id="dailyStreak">
+                    <div class="stat-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Day Streak</div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button id="editThoughtButton" class="action-button">Edit</button>
-                <button id="deleteThoughtButton" class="action-button delete">Delete</button>
+        </main>
+    </div>
+
+    <!-- Rooms View -->
+    <div id="roomsView" class="hidden">
+        <div class="rooms-header">
+            <h2 class="rooms-title">Your Thought Rooms</h2>
+            <button class="back-button" id="backToHomeButton">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+        </div>
+        
+        <div class="room-grid">
+            <!-- Room cards will be dynamically inserted here -->
+            <div class="room-card">
+                <div class="room-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="room-name">Ideas</div>
+                <div class="room-count">0 thoughts</div>
+            </div>
+            
+            <div class="room-card">
+                <div class="room-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="room-name">Journal</div>
+                <div class="room-count">0 thoughts</div>
+            </div>
+            
+            <div class="room-card">
+                <div class="room-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="room-name">Tasks</div>
+                <div class="room-count">0 thoughts</div>
+            </div>
+            
+            <div class="room-card">
+                <div class="room-icon">
+                    <i class="fas fa-quote-right"></i>
+                </div>
+                <div class="room-name">Quotes</div>
+                <div class="room-count">0 thoughts</div>
+            </div>
+            
+            <div class="room-card add-room-card">
+                <div class="room-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="room-name">Add Room</div>
             </div>
         </div>
     </div>
 
-    <div class="recording-modal hidden" id="recordingModal">
-        <div class="modal-content glass-effect">
-            <h2 class="modal-title">Your New Thought</h2>
-            <div class="thought-preview glass-effect">
-                <p id="thoughtPreview">Your transcribed thought will appear here...</p>
-            </div>
-            <div class="thought-form">
-                <div class="form-group">
-                    <label for="thoughtTitleInput">Title:</label>
-                    <input type="text" id="thoughtTitleInput" class="glass-input" placeholder="Generated title...">
-                </div>
-                <div class="form-group">
-                    <label for="thoughtCategorySelect">Room:</label>
-                    <select id="thoughtCategorySelect" class="glass-input">
-                        <option value="personal-growth">Personal Growth</option>
-                        <option value="business-ideas">Business Ideas</option>
-                        <option value="dreams-visions">Dreams & Visions</option>
-                        <option value="relationships">Relationships</option>
-                        <option value="creativity">Creativity</option>
-                        <!-- Custom rooms will be added here dynamically -->
-                    </select>
-                </div>
-                <div class="button-group">
-                    <button id="saveThoughtButton" class="save-button glass-effect">Save Thought</button>
-                    <button id="discardThoughtButton" class="discard-button glass-effect">Discard</button>
-                </div>
-            </div>
+    <!-- Recording Interface (Hidden by default) -->
+    <div id="recordingInterface" class="hidden">
+        <div class="recording-header">
+            <button id="stopRecordingButton" class="icon-button">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="recording-status">Recording...</div>
+        </div>
+        
+        <div class="recording-visualization">
+            <div class="audio-wave"></div>
+        </div>
+        
+        <div class="recording-actions">
+            <button id="cancelRecordingButton" class="secondary-button">Cancel</button>
+            <button id="saveThoughtButton" class="primary-button">Save Thought</button>
         </div>
     </div>
 
-    <footer class="app-footer">
-        <nav class="footer-nav">
-            <a href="privacy.html" class="footer-link">Privacy</a>
-            <a href="terms.html" class="footer-link">Terms</a>
-            <button id="installApp" class="install-button hidden">Add to Home Screen</button>
-        </nav>
-    </footer>
-
-    <div class="offline-notification hidden" id="offlineNotification">
-        <p>You are currently offline. Some features may be unavailable.</p>
-    </div>
-
-    <button id="remindMeButton" class="remind-me-button" aria-label="Show a random memory">
-        <div class="star-icon">⭐</div>
-        <span>Remind Me</span>
-    </button>
-
-    <div class="random-memory-modal hidden" id="randomMemoryModal">
-        <div class="modal-content glass-effect">
-            <button class="close-modal" id="closeRandomMemory" aria-label="Close modal">×</button>
-            <h2 class="modal-title">Memory Echo</h2>
-            <div class="memory-card glass-effect">
-                <h3 id="randomMemoryTitle">Memory Title</h3>
-                <p id="randomMemoryContent">Memory content will appear here...</p>
-                <div class="memory-meta">
-                    <span class="memory-date" id="randomMemoryDate">Date</span>
-                    <span class="memory-room" id="randomMemoryRoom">Room</span>
-                </div>
-            </div>
-            <button class="view-full-button glass-effect" id="viewFullMemoryButton">View Full Memory</button>
-        </div>
-    </div>
-
-    <div class="create-room-modal hidden" id="createRoomModal">
-        <div class="modal-content glass-effect">
-            <button class="close-modal" id="closeCreateRoomModal" aria-label="Close modal">×</button>
-            <h2 class="modal-title">Create New Room</h2>
-            <div class="form-group">
-                <label for="roomNameInput">Room Name:</label>
-                <input type="text" id="roomNameInput" class="glass-input" placeholder="Enter room name...">
-            </div>
-            <div class="form-group">
-                <label for="roomColorSelect">Room Color:</label>
-                <div class="color-picker" id="roomColorPicker">
-                    <div class="color-option" data-color="#61a67c" style="background-color: #61a67c;"></div>
-                    <div class="color-option" data-color="#e4b5b5" style="background-color: #e4b5b5;"></div>
-                    <div class="color-option" data-color="#e6be8a" style="background-color: #e6be8a;"></div>
-                    <div class="color-option" data-color="#b798e0" style="background-color: #b798e0;"></div>
-                    <div class="color-option" data-color="#7bbfcf" style="background-color: #7bbfcf;"></div>
-                    <div class="color-option" data-color="#f0a07c" style="background-color: #f0a07c;"></div>
-                </div>
-                <input type="hidden" id="selectedRoomColor" value="#7bbfcf">
-            </div>
-            <div class="button-group">
-                <button id="saveRoomButton" class="save-button glass-effect">Create Room</button>
-                <button id="cancelRoomButton" class="discard-button glass-effect">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Premium Upgrade Modal -->
-    <div id="premium-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Upgrade to Mind Castle Premium</h2>
-            <p>Daily AI usage limit reached. Unlock Mind Castle Premium for unlimited AI actions and enhanced memory echoes.</p>
-            <ul class="premium-features-list">
-                <li><i class="fas fa-infinity"></i> Unlimited AI Call-to-Actions</li>
-                <li><i class="fas fa-star"></i> 2 Memory Echo reminders daily</li>
-                <li><i class="fas fa-cloud-upload-alt"></i> Cloud backup (coming soon)</li>
-                <li><i class="fas fa-palette"></i> Custom themes (coming soon)</li>
-            </ul>
-            <p class="premium-price">€4.99 / month</p>
-            <button id="upgrade-btn">Upgrade Now</button>
-        </div>
-    </div>
-
-    <!-- Business Analysis Modal -->
-    <div id="analysis-modal" class="modal analysis-modal">
-        <div class="modal-content">
-            <div class="analysis-header">
-                <span class="close close-analysis">&times;</span>
-                <h2>Mind Castle Business Analysis</h2>
-            </div>
-            <div class="analysis-body">
-                <div id="analysis-loading" class="loading-container">
-                    <div class="loading-spinner"></div>
-                    <p>Analyzing your Mind Castle data...</p>
-                </div>
-                <div id="analysis-content" class="hidden">
-                    <!-- Content will be dynamically generated -->
-                </div>
-            </div>
-            <div class="analysis-footer">
-                <button id="download-analysis-btn" class="btn btn-primary">Download Report</button>
-                <button id="share-analysis-btn" class="btn btn-secondary">Share Insights</button>
-                <button class="btn btn-tertiary close-analysis">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/particles.js"></script>
+    <!-- Scripts -->
     <script src="js/app.js"></script>
-    <script src="js/analysis.js"></script>
-    <script>
-        // Register service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed:', err));
-            });
-        }
-    </script>
 </body>
 </html> 

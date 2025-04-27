@@ -3,24 +3,381 @@
  * Handles app functionality, voice recording, and storage
  */
 
-// Wait for the DOM to load
+// App Initialization
 document.addEventListener('DOMContentLoaded', () => {
-    // Show splash screen for 1.5 seconds
-    setTimeout(() => {
-        const splashScreen = document.getElementById('splashScreen');
-        if (splashScreen) {
-            splashScreen.classList.add('hidden');
-            // Remove from DOM after animation completes
-            setTimeout(() => {
-                splashScreen.style.display = 'none';
-            }, 500);
-        }
-    }, 1500);
-
-    // Initialize app
-    const app = new MindCastleApp();
-    app.initialize();
+    initApp();
 });
+
+/**
+ * Initializes the application and handles the splash screen lifecycle
+ */
+function initApp() {
+    const splashScreen = document.getElementById('splashScreen');
+    const appContainer = document.querySelector('.app-container');
+    const splashMessage = document.querySelector('.splash-message');
+    
+    // Simulate loading time (replace with actual content loading in production)
+    setTimeout(() => {
+        hideSplashScreen();
+    }, 3000);
+    
+    // Function to hide splash screen with a smooth fade out
+    function hideSplashScreen() {
+        // Add the fade-out class for animation
+        splashScreen.classList.add('fade-out');
+        splashScreen.classList.remove('fade-in');
+        
+        // Show the main app container after a delay
+        setTimeout(() => {
+            splashScreen.style.display = 'none';
+            appContainer.classList.remove('hidden');
+            
+            // Add fade-in class to app container for smooth entry
+            appContainer.classList.add('fade-in');
+            
+            // Initialize app components
+            initAppComponents();
+        }, 1200);
+    }
+}
+
+/**
+ * Initializes the main app components after splash screen dismissal
+ */
+function initAppComponents() {
+    const recordButton = document.getElementById('recordButton');
+    const backToHomeButton = document.getElementById('backToHomeButton');
+    const roomsView = document.getElementById('roomsView');
+    const appContainer = document.querySelector('.app-container');
+    
+    // Initialize speech recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isRecording = false;
+    let transcript = '';
+    let transcriptionContainer = null;
+    
+    // Create transcription container
+    function createTranscriptionContainer() {
+        if (document.getElementById('transcriptionContainer')) return;
+        
+        transcriptionContainer = document.createElement('div');
+        transcriptionContainer.id = 'transcriptionContainer';
+        transcriptionContainer.className = 'transcription-container';
+        transcriptionContainer.innerHTML = `
+            <p class="transcription-text">Listening...</p>
+            <div class="transcription-controls">
+                <button id="stopRecordingButton" class="stop-recording-btn">
+                    <i class="fas fa-stop"></i> Stop
+                </button>
+            </div>
+        `;
+        
+        // Insert after the main controls
+        const mainControls = document.querySelector('.main-controls');
+        mainControls.parentNode.insertBefore(transcriptionContainer, mainControls.nextSibling);
+        
+        // Add event listener to stop button
+        document.getElementById('stopRecordingButton').addEventListener('click', stopRecording);
+    }
+    
+    // Initialize speech recognition
+    function initSpeechRecognition() {
+        // Check if Speech Recognition is supported
+        if (!SpeechRecognition) {
+            alert("Your browser doesn't support speech recognition. Please try Chrome or Edge.");
+            return false;
+        }
+        
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = function() {
+            isRecording = true;
+            recordButton.classList.add('recording');
+            createTranscriptionContainer();
+        };
+        
+        recognition.onresult = function(event) {
+            const transcriptionText = document.querySelector('.transcription-text');
+            if (!transcriptionText) return;
+            
+            let interimTranscript = '';
+            let finalTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const result = event.results[i];
+                if (result.isFinal) {
+                    finalTranscript += result[0].transcript;
+                } else {
+                    interimTranscript += result[0].transcript;
+                }
+            }
+            
+            // Update transcript global variable
+            transcript = finalTranscript + interimTranscript;
+            
+            // Update the display
+            if (transcript) {
+                transcriptionText.textContent = transcript;
+                transcriptionText.classList.remove('empty');
+            } else {
+                transcriptionText.textContent = 'Listening...';
+                transcriptionText.classList.add('empty');
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error', event.error);
+            stopRecording();
+        };
+        
+        recognition.onend = function() {
+            isRecording = false;
+            recordButton.classList.remove('recording');
+            
+            // If we have a transcript, save it
+            if (transcript.trim()) {
+                saveThought(transcript);
+            } else {
+                removeTranscriptionContainer();
+            }
+        };
+        
+        return true;
+    }
+    
+    // Start recording
+    function startRecording() {
+        if (!recognition && !initSpeechRecognition()) return;
+        
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error('Error starting speech recognition', e);
+            alert('Error starting speech recognition. Please try again.');
+        }
+    }
+    
+    // Stop recording
+    function stopRecording() {
+        if (!isRecording) return;
+        
+        try {
+            recognition.stop();
+        } catch (e) {
+            console.error('Error stopping speech recognition', e);
+        }
+    }
+    
+    // Remove transcription container
+    function removeTranscriptionContainer() {
+        if (transcriptionContainer) {
+            transcriptionContainer.remove();
+            transcriptionContainer = null;
+        }
+    }
+    
+    // Save thought
+    function saveThought(text) {
+        if (!text.trim()) return;
+        
+        // Generate a title from the first few words
+        const words = text.trim().split(/\s+/);
+        const title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
+        
+        // Use enhanced AI categorization based on keywords
+        const category = categorizeThought(text);
+        
+        // Create a new thought object
+        const thought = {
+            id: Date.now().toString(),
+            title: title,
+            content: text.trim(),
+            timestamp: new Date().toISOString(),
+            room: category
+        };
+        
+        // Save to localStorage
+        const thoughts = JSON.parse(localStorage.getItem('thoughts') || '[]');
+        thoughts.push(thought);
+        localStorage.setItem('thoughts', JSON.stringify(thoughts));
+        
+        // Update stats
+        updateStats();
+        
+        // Remove transcription container
+        removeTranscriptionContainer();
+        
+        // Show success message with category information
+        showSavedMessage(thought);
+        
+        console.log('Thought saved to room:', category);
+    }
+    
+    // Simple categorization based on keywords
+    function categorizeThought(text) {
+        const textLower = text.toLowerCase();
+        
+        // Default room
+        const defaultRoom = "General Thoughts";
+        
+        // Define keyword categories with more comprehensive lists
+        const categories = {
+            "Business Ideas": [
+                "business", "startup", "idea", "entrepreneur", "company", "market", 
+                "product", "service", "customer", "profit", "revenue", "investment",
+                "investor", "launch", "monetize", "sell", "selling", "sales", "client"
+            ],
+            "Personal Growth": [
+                "dream", "goal", "vision", "improve", "growth", "progress", "better",
+                "develop", "learning", "learn", "skill", "habit", "achievement", "success",
+                "mindfulness", "meditation", "health", "exercise", "routine", "self"
+            ],
+            "Relationships": [
+                "relationship", "family", "friend", "partner", "spouse", "marriage",
+                "dating", "love", "connection", "social", "communication", "conflict",
+                "together", "care", "caring", "support", "conversation", "talk", "trust"
+            ],
+            "Creative Projects": [
+                "create", "creative", "art", "design", "write", "book", "story", "music",
+                "paint", "draw", "craft", "project", "inspiration", "imagine", "novel",
+                "film", "video", "content", "blog", "podcast", "photography", "make"
+            ],
+            "Daily Journal": [
+                "today", "yesterday", "morning", "evening", "day", "week", "happened",
+                "feel", "felt", "experience", "mood", "emotion", "diary", "remember", 
+                "reflection", "thinking", "thought", "notice", "observed", "grateful"
+            ]
+        };
+        
+        // Check each category for keyword matches
+        for (const [category, keywords] of Object.entries(categories)) {
+            // Count how many keywords match
+            const matchCount = keywords.filter(keyword => textLower.includes(keyword)).length;
+            
+            // If we have any matches, return this category
+            if (matchCount > 0) {
+                return category;
+            }
+        }
+        
+        // If no match, return default room
+        return defaultRoom;
+    }
+    
+    // Show saved message
+    function showSavedMessage(thought) {
+        const savedMsg = document.createElement('div');
+        savedMsg.className = 'saved-message';
+        savedMsg.innerHTML = `
+            <div class="saved-message-content">
+                <i class="fas fa-check-circle"></i>
+                <div class="saved-message-text">
+                    <p>Thought saved!</p>
+                    <p class="saved-room">Added to <strong>${thought.room}</strong></p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(savedMsg);
+        
+        // Remove after animation
+        setTimeout(() => {
+            savedMsg.classList.add('fade-out');
+            setTimeout(() => savedMsg.remove(), 500);
+        }, 2500);
+    }
+    
+    // Update statistics
+    function updateStats() {
+        const thoughts = JSON.parse(localStorage.getItem('thoughts') || '[]');
+        
+        // Update total thoughts count
+        const totalThoughtsElement = document.querySelector('#totalThoughts .stat-value');
+        if (totalThoughtsElement) {
+            totalThoughtsElement.textContent = thoughts.length;
+        }
+        
+        // Get most frequent room
+        const roomCounts = {};
+        thoughts.forEach(thought => {
+            roomCounts[thought.room] = (roomCounts[thought.room] || 0) + 1;
+        });
+        
+        let maxCount = 0;
+        let frequentRoom = "None";
+        
+        for (const [room, count] of Object.entries(roomCounts)) {
+            if (count > maxCount) {
+                maxCount = count;
+                frequentRoom = room;
+            }
+        }
+        
+        // Update frequent room stat
+        const frequentRoomElement = document.querySelector('#frequentRoom .stat-value');
+        if (frequentRoomElement) {
+            frequentRoomElement.textContent = frequentRoom;
+        }
+        
+        // Calculate streak (simplified)
+        const streakElement = document.querySelector('#dailyStreak .stat-value');
+        if (streakElement) {
+            const today = new Date().toDateString();
+            const uniqueDays = new Set();
+            
+            thoughts.forEach(thought => {
+                const thoughtDate = new Date(thought.timestamp).toDateString();
+                uniqueDays.add(thoughtDate);
+            });
+            
+            // Check if today has entries
+            const streak = uniqueDays.has(today) ? uniqueDays.size : 0;
+            streakElement.textContent = streak;
+        }
+        
+        // Store stats in localStorage for other components
+        localStorage.setItem('totalThoughts', thoughts.length);
+        localStorage.setItem('frequentRoom', frequentRoom);
+    }
+    
+    // Add event listeners
+    if (recordButton) {
+        recordButton.addEventListener('click', startRecording);
+    }
+    
+    if (backToHomeButton) {
+        backToHomeButton.addEventListener('click', () => {
+            roomsView.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+        });
+    }
+    
+    // Initialize stats
+    updateStats();
+}
+
+/**
+ * Updates the statistics displayed on the home screen
+ */
+function updateStatistics() {
+    const totalThoughtsElement = document.querySelector('#totalThoughts .stat-value');
+    const frequentRoomElement = document.querySelector('#frequentRoom .stat-value');
+    const dailyStreakElement = document.querySelector('#dailyStreak .stat-value');
+    
+    // For demonstration purposes - would normally fetch from local storage or API
+    const totalThoughts = localStorage.getItem('totalThoughts') || 0;
+    const frequentRoom = localStorage.getItem('frequentRoom') || 'Ideas';
+    const dailyStreak = localStorage.getItem('dailyStreak') || 0;
+    
+    // Update DOM elements
+    if (totalThoughtsElement) totalThoughtsElement.textContent = totalThoughts;
+    if (frequentRoomElement) frequentRoomElement.textContent = frequentRoom;
+    if (dailyStreakElement) dailyStreakElement.textContent = dailyStreak;
+}
 
 class MindCastleApp {
     constructor() {
@@ -199,17 +556,9 @@ class MindCastleApp {
         // Discard thought button
         this.discardThoughtButton.addEventListener('click', () => this.discardThought());
         
-        // Room card clicks
-        this.roomCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const room = card.getAttribute('data-room');
-                this.openRoom(room);
-            });
-        });
-        
-        // Stats clicks
+        // Stats clicks - add event listeners to the stat cards
         document.getElementById('totalThoughts').parentNode.addEventListener('click', () => {
-            this.openAllThoughts();
+            this.openRoom('all');
         });
         
         document.getElementById('frequentRoom').parentNode.addEventListener('click', () => {
@@ -220,19 +569,28 @@ class MindCastleApp {
             this.showStreakModal();
         });
         
+        // Room cards
+        document.querySelectorAll('.room-card:not(.add-room-card)').forEach(card => {
+            card.addEventListener('click', () => {
+                const room = card.getAttribute('data-room');
+                this.openRoom(room);
+            });
+        });
+
         // Add new room card click
-        this.addRoomCard.addEventListener('click', () => this.showCreateRoomModal());
+        document.getElementById('addRoomCard').addEventListener('click', () => this.showCreateRoomModal());
+        
+        // Back to home button from rooms view
+        const backToHomeButton = document.getElementById('backToHomeButton');
+        if (backToHomeButton) {
+            backToHomeButton.addEventListener('click', () => this.closeRoomsView());
+        }
         
         // Back to rooms button
         this.backToRoomsButton.addEventListener('click', () => this.closeRoom());
         
-        // Search
+        // Search button
         this.searchButton.addEventListener('click', () => this.searchThoughts());
-        this.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.searchThoughts();
-            }
-        });
         
         // Thought Modal
         this.closeModalButton.addEventListener('click', () => this.closeThoughtModal());
@@ -2263,11 +2621,17 @@ class MindCastleApp {
 
     // Toggle rooms view
     toggleRoomsView() {
-        const roomsSection = document.querySelector('.castle-rooms');
-        const homeScreen = document.querySelector('.app-container > :not(.castle-rooms)');
+        const homeView = document.querySelector('main > header, main > .main-controls');
+        const roomsView = document.getElementById('roomsView');
         
-        // Transition to Rooms view
-        this.applyTransition(roomsSection, homeScreen);
+        if (roomsView.classList.contains('hidden')) {
+            // Show rooms view, hide home view
+            roomsView.classList.remove('hidden');
+            this.applyTransition(roomsView, homeView);
+        } else {
+            // Show home view, hide rooms view
+            this.closeRoomsView();
+        }
     }
 
     // Show streak modal
@@ -2344,18 +2708,26 @@ class MindCastleApp {
 
     // Apply transition effect between views
     applyTransition(showElement, hideElement) {
-        // Add transition classes
-        hideElement.classList.add('page-transition-exit');
+        // If hideElement is a NodeList or HTMLCollection, convert to array
+        const elementsToHide = hideElement.length ? Array.from(hideElement) : [hideElement];
         
-        // After a brief delay, continue the transition
-        setTimeout(() => {
-            hideElement.classList.add('page-transition-exit-active');
-            
-            // After transition completes
+        // Hide all elements that need to be hidden
+        elementsToHide.forEach(element => {
+            element.classList.add('page-transition-exit');
             setTimeout(() => {
-                hideElement.classList.add('hidden');
-                hideElement.classList.remove('page-transition-exit', 'page-transition-exit-active');
-                
+                element.classList.add('page-transition-exit-active');
+            }, 50);
+        });
+        
+        // After transition completes
+        setTimeout(() => {
+            elementsToHide.forEach(element => {
+                element.classList.add('hidden');
+                element.classList.remove('page-transition-exit', 'page-transition-exit-active');
+            });
+            
+            // Show element with animation
+            if (showElement instanceof Element) {
                 showElement.classList.remove('hidden');
                 showElement.classList.add('page-transition-enter');
                 
@@ -2368,8 +2740,19 @@ class MindCastleApp {
                 setTimeout(() => {
                     showElement.classList.remove('page-transition-enter', 'page-transition-enter-active');
                 }, 300);
-            }, 300);
-        }, 50);
+            }
+        }, 300);
+    }
+
+    // Add this method to close rooms view and return to home
+    closeRoomsView() {
+        const homeView = document.querySelector('main > header, main > .main-controls');
+        const roomsView = document.getElementById('roomsView');
+        
+        if (!roomsView.classList.contains('hidden')) {
+            roomsView.classList.add('hidden');
+            homeView.classList.remove('hidden');
+        }
     }
 }
 
@@ -2831,3 +3214,28 @@ document.addEventListener('DOMContentLoaded', function() {
         shareBtn.addEventListener('click', shareAnalysis);
     }
 }); 
+
+// Get all thoughts
+function getAllThoughts() {
+    return JSON.parse(localStorage.getItem('thoughts') || '[]');
+}
+
+// Get thoughts from a specific room
+function getThoughtsByRoom(roomName) {
+    const thoughts = getAllThoughts();
+    return thoughts.filter(thought => thought.room === roomName);
+}
+
+// Get a specific thought by ID
+function getThoughtById(id) {
+    const thoughts = getAllThoughts();
+    return thoughts.find(thought => thought.id === id);
+}
+
+// Delete a thought
+function deleteThought(id) {
+    const thoughts = getAllThoughts();
+    const updatedThoughts = thoughts.filter(thought => thought.id !== id);
+    localStorage.setItem('thoughts', JSON.stringify(updatedThoughts));
+    updateStats();
+}
